@@ -10,6 +10,11 @@ import (
 // You should only output to `out` once.
 // Do NOT modify function signature.
 func sumWorker(nums chan int, out chan int) {
+	sum:=0
+	for num := range nums{
+		sum=sum+num
+	}
+	out <- sum
 	// TODO: implement me
 	// HINT: use for loop over `nums`
 }
