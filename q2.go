@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"io"
 	"strconv"
+	"os"
+	"sync"
 )
 
 // Sum numbers from channel `nums` and output sum to `out`.
@@ -25,10 +27,36 @@ func sumWorker(nums chan int, out chan int) {
 // You should use `checkError` to handle potential errors.
 // Do NOT modify function signature.
 func sum(num int, fileName string) int {
+	nums := make(chan int, num)
+	out := make(chan int, num)
+	file,_ := os.Open(fileName)
+	elem,_ :=readInts(file)
+	waitGroup := sync.WaitGroup{}
+	for i:=0;i<num;i++{
+		waitGroup.Add(1)
+		go func(){
+			sumWorker(nums,out)
+			waitGroup.Done()
+		}()
+	}
+	waitGroup.Add(1)
+	go func(){
+		for _, i := range elem{
+			nums<-i
+		}
+		waitGroup.Done()
+		close(nums)
+	}()
+	waitGroup.Wait()
+	close(out)
+	res:=0
+	for i:= range out{
+		res=res+i
+	}
+	return res
 	// TODO: implement me
 	// HINT: use `readInts` and `sumWorkers`
 	// HINT: used buffered channels for splitting numbers between workers
-	return 0
 }
 
 // Read a list of integers separated by whitespace from `r`.
